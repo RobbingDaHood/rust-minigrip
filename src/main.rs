@@ -1,6 +1,4 @@
-use std::{env, fs, process};
-use std::error::Error;
-
+use std::{env, process};
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -9,8 +7,8 @@ fn main() {
         process::exit(1);
     });
 
-    println!("Searching for {}", config.query());
-    println!("In file {}", config.filename());
+    println!("Searching for {}", config.get_query());
+    println!("In file {}", config.get_filename());
 
     if let Err(e) = minigrip::run(config) {
         println!("Application error: {}", e);
