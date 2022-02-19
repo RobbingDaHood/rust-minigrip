@@ -3,7 +3,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     let config = minigrip::Config::new(&args).unwrap_or_else(|err| {
-        println!("Problems parsing arguments: {}", err);
+        eprintln!("Problems parsing arguments: {}", err);
         process::exit(1);
     });
 
@@ -11,7 +11,7 @@ fn main() {
     println!("In file {}", config.filename());
 
     if let Err(e) = minigrip::run(config) {
-        println!("Application error: {}", e);
+        eprintln!("Application error: {}", e);
         process::exit(1);
     }
 }
