@@ -1,5 +1,21 @@
 use std::error::Error;
-use std::fs;
+use std::{env, fs};
+
+pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.filename())?;
+
+    let results = if config.case_sensitive() {
+        search(&config.query(), &contents)
+    } else {
+        search_case_insensitive(&config.query(), &contents)
+    };
+
+    for line in results {
+        println!("{}", line);
+    }
+
+    Ok(())
+}
 
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut result = vec![];
@@ -15,9 +31,10 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
 
 pub fn search_case_insensitive<'a> (query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut result = vec![];
+    let query = query.to_lowercase();
 
     for line in contents.lines() {
-        if line.to_lowercase().contains(&query.to_lowercase()) {
+        if line.to_lowercase().contains(&query) {
             result.push(line);
         }
     }
@@ -25,19 +42,10 @@ pub fn search_case_insensitive<'a> (query: &str, contents: &'a str) -> Vec<&'a s
     result
 }
 
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(config.get_filename())?;
-
-    for line in search(config.get_query(), &contents) {
-        println!("{}", line);
-    }
-
-    Ok(())
-}
-
 pub struct Config {
     query: String,
     filename: String,
+    case_sensitive: bool,
 }
 
 impl Config {
@@ -49,14 +57,18 @@ impl Config {
         let query = args[1].clone();
         let filename = args[2].clone();
 
-        Ok(Config { query, filename })
-    }
+        let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
-    pub fn get_query(&self) -> &str {
+        Ok(Config { query, filename, case_sensitive })
+    }
+    pub fn query(&self) -> &str {
         &self.query
     }
-    pub fn get_filename(&self) -> &str {
+    pub fn filename(&self) -> &str {
         &self.filename
+    }
+    pub fn case_sensitive(&self) -> bool {
+        self.case_sensitive
     }
 }
 
